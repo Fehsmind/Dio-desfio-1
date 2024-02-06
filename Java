@@ -1,0 +1,77 @@
+// Classe de Aspecto para verificação de saldo insuficiente
+public aspect VerificarSaldoInsuficienteAspect {
+
+    // Ponto de corte para todos os métodos de saque em qualquer conta bancária
+    pointcut saqueEmConta() : execution(* ContaBancaria.sacar(double)) && target(ContaBancaria);
+
+    // Advice executado antes do método de saque
+    before() : saqueEmConta() {
+        // Obtém o saldo atual da conta
+        double saldo = ((ContaBancaria) thisJoinPoint.getTarget()).getSaldo();
+        
+        // Obtém o valor do saque
+        double valorSaque = (Double) thisJoinPoint.getArgs()[0];
+        
+        // Verifica se o saldo é suficiente
+        if (saldo < valorSaque) {
+            // Registra uma mensagem de erro
+            System.out.println("Saldo insuficiente para realizar o saque na conta " + ((ContaBancaria) thisJoinPoint.getTarget()).getTipo());
+            // Pode-se lançar uma exceção aqui se preferir
+        }
+    }
+}
+
+// Classe base para conta bancária
+public class ContaBancaria {
+    protected double saldo;
+
+    public double getSaldo() {
+        return saldo;
+    }
+
+    public void depositar(double valor) {
+        saldo += valor;
+    }
+
+    public void sacar(double valor) {
+        saldo -= valor;
+    }
+}
+
+// Classe para conta corrente
+public class ContaCorrente extends ContaBancaria {
+    // Implementação específica para conta corrente, se necessário
+}
+
+// Classe para conta salário
+public class ContaSalario extends ContaBancaria {
+    // Implementação específica para conta salário, se necessário
+}
+
+// Classe para conta poupança
+public class ContaPoupanca extends ContaBancaria {
+    // Implementação específica para conta poupança, se necessário
+}
+
+// Classe para conta de investimento
+public class ContaInvestimento extends ContaBancaria {
+    // Implementação específica para conta de investimento, se necessário
+}
+
+// Classe principal
+public class Main {
+    public static void main(String[] args) {
+        // Criação de objetos de contas bancárias
+        ContaBancaria contaCorrente = new ContaCorrente();
+        ContaBancaria contaSalario = new ContaSalario();
+        ContaBancaria contaPoupanca = new ContaPoupanca();
+        ContaBancaria contaInvestimento = new ContaInvestimento();
+
+        // Exemplo de uso
+        contaCorrente.depositar(1000);
+        contaCorrente.sacar(500); // O saque será permitido, pois há saldo suficiente
+        
+        contaSalario.depositar(2000);
+        contaSalario.sacar(3000); // O saque não será permitido devido a saldo insuficiente
+    }
+}
